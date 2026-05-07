@@ -1,6 +1,6 @@
 # Parquet Compactor CLI
 
-A Python-based command-line tool that solves the **small file problem** in data engineering by compacting many small Parquet files into fewer optimized Parquet files.
+A Python-based command-line tool that solves the **small file problem** in data engineering by compacting many small Parquet files into large optimized Parquet files.
 
 ---
 
