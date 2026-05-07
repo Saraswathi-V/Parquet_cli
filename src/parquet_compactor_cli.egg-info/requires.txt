@@ -1,0 +1,2 @@
+pyarrow>=15.0.0
+typer[all]>=0.12.0
