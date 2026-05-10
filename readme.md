@@ -964,8 +964,3 @@ The project uses Rust, Cargo, clap, Apache Arrow Rust, Parquet Rust, walkdir, tr
 
 The tool supports dry-run mode, verbose logging, schema validation, and summary reporting.
 
-<<<<<<< HEAD
-The final outcome is a working Rust command-line tool that reduced **100 small Parquet files into 2 compacted Parquet files**, processed **500,000 rows**, and reduced the demo dataset size from **212.76 MB to 55.28 MB** while preserving the same data and schema.
-=======
-The final outcome is a working command-line tool that reduced **100 small Parquet files into 2 compacted Parquet files**, processed **500,000 rows**, and reduced the demo dataset size from **212.76 MB to 55.28 MB** while preserving the same data and schema.
->>>>>>> 00fe700bed73fe0149fc338d7feefba82c48f6d2
