@@ -1,11 +1,4 @@
 # Parquet Compactor CLI - Rust
-
-<<<<<<< HEAD
-A Rust-based command-line tool that solves the **small file problem** in data engineering by compacting many small Parquet files into fewer optimized Parquet files.
-=======
-A Python-based command-line tool that solves the **small file problem** in data engineering by compacting many small Parquet files into large optimized Parquet files.
->>>>>>> 00fe700bed73fe0149fc338d7feefba82c48f6d2
-
 ---
 
 ## Project Introduction
