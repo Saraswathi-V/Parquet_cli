@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: parquet-compactor-cli
-Version: 0.1.0
-Summary: A beginner-friendly CLI tool to compact small Parquet files into larger optimized files.
-Requires-Python: >=3.10
-Description-Content-Type: text/markdown
-Requires-Dist: pyarrow>=15.0.0
-Requires-Dist: typer[all]>=0.12.0
