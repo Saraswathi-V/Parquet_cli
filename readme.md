@@ -1,18 +1,18 @@
-# Parquet Compactor CLI
+# Parquet Compactor CLI - Rust
 
-A Python-based command-line tool that solves the **small file problem** in data engineering by compacting many small Parquet files into fewer optimized Parquet files.
+A Rust-based command-line tool that solves the **small file problem** in data engineering by compacting many small Parquet files into fewer optimized Parquet files.
 
 ---
 
 ## Project Introduction
 
-The **Parquet Compactor CLI** is a data engineering project designed to solve a common real-world problem called the **small file problem**.
+The **Parquet Compactor CLI** is a Rust data engineering project designed to solve a common real-world problem called the **small file problem**.
 
 In modern data platforms, data is often stored in **Parquet format** because Parquet is efficient for analytics, supports compression, and stores schema information. However, data pipelines can sometimes generate hundreds or thousands of very small Parquet files.
 
 When query engines such as Spark, Athena, Trino, or Presto read these files, they need to open each file, read its metadata, check its schema, and then scan the data. If there are too many small files, query performance becomes poor.
 
-This project builds a CLI tool called `pcompact` that reads many small Parquet files from an input directory and writes fewer compacted Parquet files into an output directory.
+This project builds a Rust CLI tool called `pcompact` that reads many small Parquet files from an input directory and writes fewer compacted Parquet files into an output directory.
 
 In simple words:
 
@@ -134,6 +134,22 @@ However, compaction is still successful if the file count decreases.
 
 ---
 
+## Why Rust?
+
+This project is implemented in **Rust** because Rust provides:
+
+- Strong performance
+- Memory safety
+- Fast file processing
+- Reliable command-line tooling
+- Cargo-based project management
+- Strong type checking
+- Good support for production-style systems programming
+
+Rust is a good choice for building command-line data engineering tools because it can handle file processing efficiently while avoiding many common memory-related errors.
+
+---
+
 ## Features
 
 This project supports:
@@ -142,11 +158,12 @@ This project supports:
 - Directory-based output
 - Target output file size
 - Schema preservation
+- Parquet read/write using Rust crates
 - Dry-run mode
 - Verbose logging
 - Summary report
-- Pytest-based testing
-- Beginner-friendly project structure
+- Rust tests using `cargo test`
+- Professional Rust project structure
 
 ---
 
@@ -154,63 +171,73 @@ This project supports:
 
 This project uses:
 
-- Python
-- PyArrow
-- Typer
-- pathlib
-- logging
-- pytest
+- Rust
+- Cargo
+- clap
+- Apache Arrow Rust
+- Parquet Rust
+- walkdir
+- tracing
+- anyhow
+- cargo test
 
-### Python
+### Rust
 
-Python is used as the main programming language.
+Rust is used as the main programming language.
 
-### PyArrow
+### Cargo
 
-PyArrow is used to read and write Parquet files.
+Cargo is used to build, run, test, and manage the Rust project.
 
-### Typer
+### clap
 
-Typer is used to build the command-line interface.
+`clap` is used to build the command-line interface.
 
-### pathlib
+### Apache Arrow Rust
 
-pathlib is used for clean file path handling.
+Apache Arrow Rust is used for Arrow record batch handling.
 
-### logging
+### Parquet Rust
 
-logging is used to show normal logs and verbose logs.
+The Rust Parquet crate is used to read and write Parquet files.
 
-### pytest
+### walkdir
 
-pytest is used to test the project.
+`walkdir` is used to recursively find Parquet files inside the input directory.
+
+### tracing
+
+`tracing` is used for normal and verbose logging.
+
+### anyhow
+
+`anyhow` is used for error handling.
 
 ---
 
 ## Project Structure
 
 ```text
-parquet-compactor-cli/
+parquet-compactor-rs/
 │
+├── Cargo.toml
 ├── README.md
-├── pyproject.toml
-├── requirements.txt
-│
-├── scripts/
-│   └── generate_sample_data.py
+├── .gitignore
 │
 ├── src/
-│   └── pcompact/
-│       ├── __init__.py
-│       ├── cli.py
-│       ├── compactor.py
-│       ├── file_utils.py
-│       ├── report.py
-│       └── config.py
+│   ├── lib.rs
+│   ├── main.rs
+│   ├── cli.rs
+│   ├── config.rs
+│   ├── file_utils.rs
+│   ├── compactor.rs
+│   ├── report.rs
+│   │
+│   └── bin/
+│       └── generate_sample_data.rs
 │
 ├── tests/
-│   ├── test_compactor.py
-│   └── test_file_utils.py
+│   └── file_utils_test.rs
 │
 └── sample_data/
     ├── small_files/
@@ -221,31 +248,65 @@ parquet-compactor-cli/
 
 ## Explanation of Important Files
 
-### `scripts/generate_sample_data.py`
+### `Cargo.toml`
 
-This script generates sample Parquet files for testing and demonstration.
+This file defines the Rust package, binaries, and dependencies.
 
-It creates many small Parquet files inside:
+It includes dependencies such as:
+
+- `clap`
+- `parquet`
+- `arrow-array`
+- `arrow-schema`
+- `walkdir`
+- `tracing`
+- `anyhow`
+- `rand`
+
+It also defines two binaries:
 
 ```text
-sample_data/small_files
+pcompact
+generate_sample_data
 ```
-
-These files simulate small files created by a real data pipeline.
 
 ---
 
-### `src/pcompact/cli.py`
+### `src/main.rs`
 
-This file handles the command-line interface.
+This is the main entry point of the CLI application.
 
-It allows users to run:
+It:
 
-```bash
-pcompact -i ./small_files -o ./compacted --target-size 128MB
+- Parses CLI arguments
+- Sets up logging
+- Creates the configuration object
+- Calls the compaction function
+- Prints the final report
+
+---
+
+### `src/lib.rs`
+
+This file exposes project modules for use by the main binary and tests.
+
+It includes:
+
+```rust
+pub mod cli;
+pub mod compactor;
+pub mod config;
+pub mod file_utils;
+pub mod report;
 ```
 
-It accepts options such as:
+---
+
+### `src/cli.rs`
+
+This file handles command-line arguments using `clap`.
+
+It supports:
 
 ```text
 -i
@@ -255,9 +316,29 @@ It accepts options such as:
 --verbose
 ```
 
+Example command:
+
+```bash
+pcompact -i ./small_files -o ./compacted --target-size 128MB
+```
+
 ---
 
-### `src/pcompact/file_utils.py`
+### `src/config.rs`
+
+This file stores configuration values such as:
+
+- Input directory
+- Output directory
+- Target size in bytes
+- Dry-run option
+- Verbose option
+
+It converts CLI arguments into a configuration object used by the rest of the program.
+
+---
+
+### `src/file_utils.rs`
 
 This file contains helper functions for:
 
@@ -265,11 +346,12 @@ This file contains helper functions for:
 - Calculating file sizes
 - Parsing target sizes like `128MB`
 - Creating output folders
+- Cleaning old Parquet files
 - Showing file sizes in readable format
 
 ---
 
-### `src/pcompact/compactor.py`
+### `src/compactor.rs`
 
 This is the main logic file.
 
@@ -279,12 +361,13 @@ It handles:
 - Grouping files by target size
 - Reading Parquet files
 - Checking schema consistency
-- Writing compacted output files
-- Counting rows processed
+- Writing compacted Parquet files
+- Counting processed rows
+- Returning the final report
 
 ---
 
-### `src/pcompact/report.py`
+### `src/report.rs`
 
 This file prints the final summary report.
 
@@ -300,16 +383,34 @@ The report includes:
 
 ---
 
-### `src/pcompact/config.py`
+### `src/bin/generate_sample_data.rs`
 
-This file stores configuration values such as:
+This file generates sample Parquet files for testing and demonstration.
 
-- Input directory
-- Output directory
-- Target size
-- Dry-run option
-- Verbose option
-- Compression type
+It creates many small Parquet files inside:
+
+```text
+sample_data/small_files
+```
+
+These files simulate small files created by a real data pipeline.
+
+---
+
+### `tests/file_utils_test.rs`
+
+This file contains Rust tests.
+
+The tests verify:
+
+- Target size parsing
+- Human-readable file size conversion
+
+Tests can be run using:
+
+```bash
+cargo test
+```
 
 ---
 
@@ -328,56 +429,66 @@ Tool calculates file sizes
         ↓
 Tool groups files based on target size
         ↓
-Tool reads Parquet data
+Tool reads Parquet data using Rust Parquet APIs
         ↓
 Tool validates schema
         ↓
-Tool writes compacted output files
+Tool writes compacted Parquet output files
         ↓
 Tool prints summary report
 ```
 
 The user runs the command from the terminal. The tool reads the input directory and finds all Parquet files. After that, it calculates the size of each file and groups files together based on the target size.
 
-For example, if the target size is `128MB`, the tool groups files until the group is close to that size. Then it reads the Parquet data using PyArrow, validates the schema, writes compacted output files, and prints a final summary report.
+For example, if the target size is `128MB`, the tool groups files until the group is close to that size. Then it reads the Parquet data, validates the schema, writes compacted output files, and prints a final summary report.
 
 ---
 
-## Installation
+## Installation and Setup
 
-Create a virtual environment:
+Make sure Rust and Cargo are installed.
 
-```bash
-python -m venv .venv
-```
-
-Activate the virtual environment.
-
-On Windows:
+Check Rust installation:
 
 ```bash
-.venv\Scripts\activate
+rustc --version
 ```
 
-On macOS/Linux:
+Check Cargo installation:
 
 ```bash
-source .venv/bin/activate
+cargo --version
 ```
 
-Install dependencies:
+Clone or open the project folder:
 
 ```bash
-pip install -r requirements.txt
+cd parquet-compactor-rs
 ```
 
-Install the project in editable mode:
+Build the project:
 
 ```bash
-pip install -e .
+cargo build
 ```
 
-After this step, the `pcompact` command can be used from the terminal.
+---
+
+## Generate Sample Data
+
+Run:
+
+```bash
+cargo run --bin generate_sample_data
+```
+
+This creates sample Parquet files inside:
+
+```text
+sample_data/small_files
+```
+
+These files are used as input for the compactor.
 
 ---
 
@@ -386,25 +497,25 @@ After this step, the `pcompact` command can be used from the terminal.
 Generate sample Parquet files:
 
 ```bash
-python scripts/generate_sample_data.py
+cargo run --bin generate_sample_data
 ```
 
 Run dry-run mode:
 
 ```bash
-pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --dry-run
+cargo run --bin pcompact -- -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --dry-run
 ```
 
 Run actual compaction:
 
 ```bash
-pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB
+cargo run --bin pcompact -- -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB
 ```
 
 Run with verbose mode:
 
 ```bash
-pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 256MB --verbose
+cargo run --bin pcompact -- -i ./sample_data/small_files -o ./sample_data/compacted --target-size 256MB --verbose
 ```
 
 ---
@@ -423,16 +534,44 @@ Verbose usage:
 pcompact -i ./small_files -o ./compacted --target-size 256MB --verbose
 ```
 
-Project demo usage:
+Project demo usage with Cargo:
 
 ```bash
-pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB
+cargo run --bin pcompact -- -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB
 ```
 
-Dry-run usage:
+Dry-run usage with Cargo:
 
 ```bash
-pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --dry-run
+cargo run --bin pcompact -- -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --dry-run
+```
+
+---
+
+## Build Release Executable
+
+To create a release build:
+
+```bash
+cargo build --release
+```
+
+After building, the executable will be available inside:
+
+```text
+target/release/
+```
+
+On Windows, run:
+
+```bash
+target\release\pcompact.exe -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --verbose
+```
+
+On macOS/Linux, run:
+
+```bash
+./target/release/pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --verbose
 ```
 
 ---
@@ -442,11 +581,11 @@ pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 1
 Example output after running compaction:
 
 ```text
-INFO - Found 100 Parquet files
-INFO - Total input size: 223097170 bytes
-INFO - Planned output files: 2
-INFO - Writing output file sample_data\compacted\part-00001.parquet using 60 input files
-INFO - Writing output file sample_data\compacted\part-00002.parquet using 40 input files
+INFO Found 100 Parquet files
+INFO Total input size: 223097170 bytes
+INFO Planned output files: 2
+INFO Writing output file sample_data\compacted\part-00001.parquet using 60 input files
+INFO Writing output file sample_data\compacted\part-00002.parquet using 40 input files
 
 ============================================================
 Parquet Compactor Summary - COMPACTION COMPLETED
@@ -582,7 +721,7 @@ Dry-run mode shows the compaction plan without creating output files.
 Command:
 
 ```bash
-pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --dry-run
+cargo run --bin pcompact -- -i ./sample_data/small_files -o ./sample_data/compacted --target-size 128MB --dry-run
 ```
 
 Dry-run mode is useful because it allows users to preview the output before writing files.
@@ -612,7 +751,7 @@ Verbose mode shows detailed logs during execution.
 Command:
 
 ```bash
-pcompact -i ./sample_data/small_files -o ./sample_data/compacted --target-size 256MB --verbose
+cargo run --bin pcompact -- -i ./sample_data/small_files -o ./sample_data/compacted --target-size 256MB --verbose
 ```
 
 Verbose mode helps users understand what the tool is doing internally.
@@ -620,11 +759,11 @@ Verbose mode helps users understand what the tool is doing internally.
 Example logs:
 
 ```text
-INFO - Found 100 Parquet files
-INFO - Total input size: 223097170 bytes
-INFO - Planned output files: 2
-INFO - Writing output file sample_data\compacted\part-00001.parquet using 60 input files
-INFO - Writing output file sample_data\compacted\part-00002.parquet using 40 input files
+INFO Found 100 Parquet files
+INFO Total input size: 223097170 bytes
+INFO Planned output files: 2
+INFO Writing output file sample_data\compacted\part-00001.parquet using 60 input files
+INFO Writing output file sample_data\compacted\part-00002.parquet using 40 input files
 ```
 
 ---
@@ -650,24 +789,33 @@ This prevents files with different structures from being incorrectly merged toge
 Run tests using:
 
 ```bash
-pytest
+cargo test
 ```
 
 The tests check:
 
 - Target size parsing
-- File discovery
 - Human-readable file size conversion
-- Core compaction logic
-- Dry-run behavior
 
-Testing confirms that the project works correctly and that important functions behave as expected.
+Example expected test output:
+
+```text
+running 4 tests
+test test_parse_size_mb ... ok
+test test_parse_size_gb ... ok
+test test_parse_size_invalid ... ok
+test test_human_readable_size_mb ... ok
+
+test result: ok. 4 passed; 0 failed
+```
+
+Testing confirms that the project works correctly and that important helper functions behave as expected.
 
 ---
 
 ## Project Outcome
 
-The final outcome of this project is a working Python CLI tool that solves the small file problem.
+The final outcome of this project is a working Rust CLI tool that solves the small file problem.
 
 The tool successfully:
 
@@ -679,7 +827,7 @@ The tool successfully:
 - Supports dry-run mode
 - Supports verbose logging
 - Prints a useful summary report
-- Includes automated tests
+- Includes Rust tests
 
 In the final demo, the project converted this:
 
@@ -737,22 +885,27 @@ If the target size is larger than the total input size, all input files may beco
 
 Therefore, target size should be selected based on the total input size and average file size.
 
+Another challenge was implementing Parquet reading and writing in Rust, because Rust requires stronger type handling and more explicit file processing compared to scripting languages.
+
 ---
 
 ## What We Learned
 
 Through this project, we learned:
 
+- Rust project structure
+- Cargo build and run workflow
 - Small file problem
-- Parquet file handling
+- Parquet file handling in Rust
 - File compaction
-- PyArrow usage
-- CLI development using Typer
+- Apache Arrow Rust usage
+- Parquet Rust crate usage
+- CLI development using clap
 - Schema preservation
-- Logging
+- Logging using tracing
 - Dry-run mode
-- Pytest testing
-- Professional Python project structure
+- Rust testing using cargo test
+- Professional Rust project structure
 
 This project helped us understand how real data engineering systems optimize files for better query performance.
 
@@ -767,7 +920,7 @@ Future improvements include:
 - Compression options such as Snappy and ZSTD
 - Row group tuning
 - Metadata-aware planning
-- Spark-based distributed compaction
+- Parallel compaction using Rust threads
 - Schema evolution support
 - Output validation report
 
@@ -789,28 +942,29 @@ The **Parquet Compactor CLI** successfully solves the small file problem by comp
 
 The project supports:
 
+- Rust-based CLI implementation
 - Input and output directories
 - Target file size
 - Dry-run mode
 - Verbose logging
 - Schema validation
 - Summary reporting
-- Automated testing
+- Rust testing
 
-The final outcome is a working data engineering CLI tool that reduced **100 small Parquet files into 2 compacted Parquet files**, processed **500,000 rows**, and reduced the demo dataset size from **212.76 MB to 55.28 MB** while preserving the same data and schema.
+The final outcome is a working Rust data engineering CLI tool that reduced **100 small Parquet files into 2 compacted Parquet files**, processed **500,000 rows**, and reduced the demo dataset size from **212.76 MB to 55.28 MB** while preserving the same data and schema.
 
 ---
 
 ## Short Summary
 
-This project is called **Parquet Compactor CLI**.
+This project is called **Parquet Compactor CLI - Rust**.
 
 It solves the small file problem in data engineering by compacting many small Parquet files into fewer larger files.
 
 The tool reads Parquet files from an input directory, groups them based on a target size such as `128MB` or `256MB`, and writes compacted output files to an output directory.
 
-The project uses Python, PyArrow, Typer, pathlib, logging, and pytest.
+The project uses Rust, Cargo, clap, Apache Arrow Rust, Parquet Rust, walkdir, tracing, and cargo test.
 
 The tool supports dry-run mode, verbose logging, schema validation, and summary reporting.
 
-The final outcome is a working command-line tool that reduced **100 small Parquet files into 2 compacted Parquet files**, processed **500,000 rows**, and reduced the demo dataset size from **212.76 MB to 55.28 MB** while preserving the same data and schema.
+The final outcome is a working Rust command-line tool that reduced **100 small Parquet files into 2 compacted Parquet files**, processed **500,000 rows**, and reduced the demo dataset size from **212.76 MB to 55.28 MB** while preserving the same data and schema.
